@@ -1,10 +1,10 @@
 # graphql-tutorial
 
-This is a copy of absinthe graphql tutorial from the absinthe repository.
+This is a copy of absinthe graphql tutorial from the absinthe repository in one page.
 
 
 
-# Getting Started
+# 1. Getting Started
 
 We'll be building a very basic GraphQL API for a blog, written in Elixir using
 Absinthe.
@@ -27,7 +27,8 @@ Before you start, it's a good idea to have some background into GraphQL in gener
 ## First Step
 
 Let's get started with [our first query](our-first-query.md)!
-# Our First Query
+
+# 2. Our First Query
 
 The first thing our viewers want is a list of our blog posts, so
 that's what we're going to give them. Here's the query we want to
@@ -187,7 +188,9 @@ Make sure that the `URL` is pointing to the correct place and press the play but
 ## Next Step
 
 Now let's look at how we can [add arguments to our queries](query-arguments.html).
-# Query Arguments
+
+
+# 3. Query Arguments
 
 Our GraphQL API would be pretty boring (and useless) if clients
 couldn't retrieve filtered data.
@@ -455,7 +458,9 @@ It should look something like this:
 ## Next Step
 
 Next up, we look at how to modify our data using [mutations](mutations.html).
-# Mutations
+
+
+# 4. Mutations
 
 A blog is no good without new content. We want to support a mutation
 to create a blog post:
@@ -531,7 +536,9 @@ Going back to the resolver code:
 ## Next Step
 
 Now let's take a look at [more complex arguments](complex-arguments.html).
-# Complex Arguments
+
+
+# 5. Complex Arguments
 
 In preparation for supporting comments on our blog, let's create users. We're building
 a modern mobile first blog of course, and thus want to support either a phone number
@@ -685,7 +692,9 @@ Here's our mutation in action in GraphiQL.
 ## Next Step
 
 Now let's [wrap things up](conclusion.html).
-# Dataloader
+
+
+# 6. Dataloader
 
 Maybe you like good performance, or you realized that you are filling your objects with fields that need resolvers like 
 
@@ -809,7 +818,9 @@ def query(query, _), do: from(a in query, select_merge: %{street_number: nil})
 This example is from the awesome [EmCasa Application](https://github.com/emcasa/backend/blob/master/apps/re/lib/addresses/addresses.ex) :) you can see how the [author](https://github.com/rhnonose) is only loading street numbers if a user has admin rights and the same used in a [resolver](https://github.com/emcasa/backend/blob/9a0f86c11499be6e1a07d0b0acf1785521eedf7f/apps/re_web/lib/graphql/resolvers/addresses.ex#L11).
 
 Check out the [docs](https://hexdocs.pm/dataloader/) for more non-trivial ways of using Dataloader.
-# Subscriptions
+
+
+# 7. Subscriptions
 
 When the need arises for near realtime data GraphQL provides subscriptions. We want to support subscriptions that look like
 
@@ -956,7 +967,10 @@ def create_post(_parent, args, %{context: %{current_user: user}}) do
 With this, open a tab and run the query at the top of this section. Then open another tab and run a mutation to add a post you should see a result in the other tab have fun.
 
 <img style="box-shadow: 0 0 6px #ccc;" src="/guides/assets/tutorial/graphiql_new_post_sub.png" alt=""/>
-# Conclusion
+
+
+
+# 8. Conclusion
 
 With this we have a basic GraphQL based API for a blog. Head on over
 to [the github page](https://github.com/absinthe-graphql/absinthe_tutorial) if
