@@ -1,6 +1,6 @@
 # graphql-tutorial
 
-This is a copy of absinthe graphql tutorial from the absinthe repository in one page.
+This is a copy of absinthe graphql tutorial from the [absinthe repository](https://github.com/absinthe-graphql/absinthe) with everything in one page.
 
 
 
