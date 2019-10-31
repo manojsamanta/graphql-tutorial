@@ -1,8 +1,8 @@
 MIT License
 
-Copyright (c) 2019 manojsamanta (for minor edits)
-
 The entire tutorial is from Absinthe Graphql, Copyright (c) Bruce Williams, Ben Wilson, https://github.com/absinthe-graphql/absinthe
+
+Copyright (c) 2019 manojsamanta (for minor edits)
 
 Parser derived from GraphQL Elixir, Copyright (c) Josh Price https://github.com/graphql-elixir/graphql-elixir
 
