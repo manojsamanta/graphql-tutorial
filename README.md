@@ -1,7 +1,6 @@
 # graphql-tutorial
 
-This is a copy of absinthe graphql tutorial from the [absinthe repository](https://github.com/absinthe-graphql/absinthe) with everything in one page.
-
+This is a copy of absinthe graphql tutorial from the [absinthe repository](https://github.com/absinthe-graphql/absinthe). My only contribution is in combining everything in one page for better reading and fixing some links.
 
 
 # 1. Getting Started
@@ -26,7 +25,7 @@ Before you start, it's a good idea to have some background into GraphQL in gener
 
 ## First Step
 
-Let's get started with [our first query](our-first-query.md)!
+Let's get started with our first query.
 
 # 2. Our First Query
 
@@ -102,8 +101,7 @@ end
 ```
 
 > For more information on the macros available to build a schema, see
-> their definitions in [Absinthe.Schema](Absinthe.Schema.html) and
-> [Absinthe.Schema.Notation](Absinthe.Schema.Notation.html).
+> their definitions in [Absinthe.Schema](https://github.com/absinthe-graphql/absinthe/blob/master/guides/schemas.md) and Absinthe.Schema.Notation.
 
 This uses a resolver module we've created (again, to match the Phoenix context naming)
 at `blog_web/resolvers/content.ex`:
@@ -134,7 +132,7 @@ which is where all the domain logic for posts lives, invoking its
 `list_posts/0` function, then returns the posts in an `:ok` tuple.
 
 > Resolvers can return a wide variety of results, to include errors and configuration
-> for [advanced plugins](middleware-and-plugins.html) that further process the data.
+> for [advanced plugins](https://github.com/absinthe-graphql/absinthe/blob/master/guides/middleware-and-plugins.md) that further process the data.
 >
 > If you're asking yourself what the implementation of the domain logic looks like, and exactly how
 > the related Ecto schemas are built, read through the code in the [absinthe_tutorial](http://github.com/absinthe-graphql/absinthe_tutorial)
@@ -187,7 +185,7 @@ Make sure that the `URL` is pointing to the correct place and press the play but
 
 ## Next Step
 
-Now let's look at how we can [add arguments to our queries](query-arguments.html).
+Now let's look at how we can add arguments to our queries.
 
 
 # 3. Query Arguments
@@ -373,7 +371,7 @@ import_types Absinthe.Type.Custom
 ```
 
 > For more information about how types are imported,
-> read [the guide on the topic](importing-types.html).
+> read [the guide on the topic](https://github.com/absinthe-graphql/absinthe/blob/master/guides/importing-types.md).
 >
 > For now, just remember that `import_types` should _only_ be
 > used in top-level schema module. (Think of it like a manifest.)
@@ -457,7 +455,7 @@ It should look something like this:
 
 ## Next Step
 
-Next up, we look at how to modify our data using [mutations](mutations.html).
+Next up, we look at how to modify our data using mutations.
 
 
 # 4. Mutations
@@ -510,7 +508,7 @@ end
 ```
 
 > Obviously things can go wrong in a mutation. To learn more about the
-> types of error results that Absinthe supports, read [the guide](errors.html).
+> types of error results that Absinthe supports, read [the guide](https://github.com/absinthe-graphql/absinthe/blob/master/guides/errors.md).
 
 ## Authorization
 
@@ -520,7 +518,7 @@ passed to the resolver as the third argument carries along with it the
 Absinthe context, a data structure that serves as the integration
 point with external mechanisms---like a Plug that authenticates the
 current user. You can learn more about how the context can be used in
-the [Context and Authentication](context-and-authentication.html)
+the [Context and Authentication](https://github.com/absinthe-graphql/absinthe/blob/master/guides/context-and-authentication.md)
 guide.
 
 Going back to the resolver code:
@@ -535,7 +533,7 @@ Going back to the resolver code:
 
 ## Next Step
 
-Now let's take a look at [more complex arguments](complex-arguments.html).
+Now let's take a look at more complex arguments.
 
 
 # 5. Complex Arguments
@@ -689,12 +687,183 @@ Here's our mutation in action in GraphiQL.
 > authorization token logs you in the first user. Obviously not what
 > you want in production!
 
-## Next Step
+# 6. The Context and Authentication
 
-Now let's [wrap things up](conclusion.html).
+Absinthe context exists to provide shared values to a given document execution.
+A common use would be to pass in the current user of a given request. The context
+is set at the call to `Absinthe.run`, and cannot be modified over the course of
+a given execution.
 
+## Basic Usage
 
-# 6. Dataloader
+As a basic example let's think about a profile page, where we want the current user
+to be able to access basic information about themselves, but not other users.
+
+First we'll need a very basic schema:
+
+```elixir
+defmodule MyAppWeb.Schema do
+  use Absinthe.Schema
+
+  @fakedb %{
+    "1" => %{name: "Bob", email: "bubba@foo.com"},
+    "2" => %{name: "Fred", email: "fredmeister@foo.com"},
+  }
+
+  query do
+    field :profile, :user do
+      resolve fn _, _, _ ->
+        # How could we get a current user here?
+      end
+    end
+  end
+
+  object :user do
+    field :id, :id
+    field :name, :string
+    field :email, :string
+  end
+end
+```
+
+A query we might want could look like:
+
+```graphql
+{
+  profile {
+    email
+  }
+}
+```
+
+If we're signed in as user 1, we should get only user 1's email, for example:
+
+```json
+{
+  "profile": {
+    "email": "bubba@foo.com"
+  }
+}
+```
+
+In order to set the context, our call to `Absinthe.run/3` should look like:
+
+```elixir
+Absinthe.run(document, MyAppWeb.Schema, context: %{current_user: %{id: "1"}})
+```
+
+To access this, we need to update our query's resolve function:
+
+```elixir
+query do
+  field :profile, :user do
+    resolve fn _, _, %{context: %{current_user: current_user}} ->
+      {:ok, Map.get(@fakedb, current_user.id)}
+    end
+  end
+end
+```
+
+And now it works!
+
+## Context and Plugs
+
+When using Absinthe.Plug you don't have direct access to the Absinthe.run call.
+Instead, we can use `Absinthe.Plug.put_options/2` to set context values which
+Absinthe.Plug will use to pass it along to Absinthe.run.
+
+Setting up your GraphQL context is as simple as writing a plug that inserts the
+appropriate values into the connection.
+
+Let's use this mechanism to set our current_user from the previous example via
+an authentication header. We will use the same Schema as before.
+
+First, our plug. We'll be checking the for the `authorization` header, and calling
+out to some unspecified authentication mechanism.
+
+```elixir
+defmodule MyAppWeb.Context do
+  @behaviour Plug
+
+  import Plug.Conn
+  import Ecto.Query, only: [where: 2]
+
+  alias MyApp.{Repo, User}
+
+  def init(opts), do: opts
+
+  def call(conn, _) do
+    context = build_context(conn)
+    Absinthe.Plug.put_options(conn, context: context)
+  end
+
+  @doc """
+  Return the current user context based on the authorization header
+  """
+  def build_context(conn) do
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+    {:ok, current_user} <- authorize(token) do
+      %{current_user: current_user}
+    else
+      _ -> %{}
+    end
+  end
+
+  defp authorize(token) do
+    User
+    |> where(token: ^token)
+    |> Repo.one
+    |> case do
+      nil -> {:error, "invalid authorization token"}
+      user -> {:ok, user}
+    end
+  end
+
+end
+```
+
+This plug will use the `authorization` header to lookup the current user. If one
+is found, it correctly sets the absinthe context. If you're using Guardian or
+some other library that provides utilities for authenticating users you can use
+those here too, and just add their output to the context.
+
+If there is no current user it's better to simply not have the `:current_user`
+key inside the map, instead of doing `%{current_user: nil}`. This way you an
+just pattern match for `%{current_user: user}` in your code and not need to
+worry about the nil case.
+
+Using this plug is very simple. If we're just in a normal plug context we can
+just make sure it's plugged prior to Absinthe.Plug
+
+```elixir
+plug MyAppWeb.Context
+
+plug Absinthe.Plug,
+  schema: MyAppWeb.Schema
+```
+
+If you're using a Phoenix router, add the context plug to a pipeline.
+
+```elixir
+defmodule MyAppWeb.Router do
+  use Phoenix.Router
+
+  resource "/pages", MyAppWeb.PagesController
+
+  pipeline :graphql do
+    plug MyAppWeb.Context
+  end
+
+  scope "/api" do
+    pipe_through :graphql
+
+    forward "/", Absinthe.Plug,
+      schema: MyAppWeb.Schema
+  end
+end
+```
+
+# 7. Dataloader
 
 Maybe you like good performance, or you realized that you are filling your objects with fields that need resolvers like 
 
@@ -820,7 +989,7 @@ This example is from the awesome [EmCasa Application](https://github.com/emcasa/
 Check out the [docs](https://hexdocs.pm/dataloader/) for more non-trivial ways of using Dataloader.
 
 
-# 7. Subscriptions
+# 8. Subscriptions
 
 When the need arises for near realtime data GraphQL provides subscriptions. We want to support subscriptions that look like
 
@@ -970,7 +1139,7 @@ With this, open a tab and run the query at the top of this section. Then open an
 
 
 
-# 8. Conclusion
+# 9. Conclusion
 
 With this we have a basic GraphQL based API for a blog. Head on over
 to [the github page](https://github.com/absinthe-graphql/absinthe_tutorial) if
